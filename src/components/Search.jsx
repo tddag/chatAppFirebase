@@ -2,6 +2,7 @@ import React, { useContext, useState } from 'react'
 import { db } from "../firebase"
 import { collection, query, where, getDocs, updateDoc, setDoc, doc, serverTimestamp, getDoc } from "firebase/firestore";
 import { AuthContext } from "../context/AuthContext";
+import { ChatContext } from '../context/ChatContext';
 
 const Search = () => {
   const [username, setUsername] = useState("")
@@ -9,6 +10,7 @@ const Search = () => {
   const [err, setErr] = useState(false)
   
   const { currentUser } = useContext(AuthContext)
+  const { dispatch } = useContext(ChatContext)
 
   const handleSearch = async () => {
     const q = query(collection(db, "users"), where("displayName", "==", username))
@@ -43,18 +45,18 @@ const Search = () => {
         // create user chats
         await updateDoc(doc(db, "userChats", currentUser.uid), {
           [combinedId + ".userInfo"]: {
-            uid: currentUser.uid,
-            displayName: currentUser.displayName,
-            photoURL: currentUser.photoURL
+            uid: user.uid,
+            displayName: user.displayName,
+            photoURL: user.photoURL
           },
           [combinedId + ".date"]: serverTimestamp()
         })
 
         await updateDoc(doc(db, "userChats", user.uid), {
           [combinedId + ".userInfo"]: {
-            uid: user.uid,
-            displayName: user.displayName,
-            photoURL: user.photoURL
+            uid: currentUser.uid,
+            displayName: currentUser.displayName,
+            photoURL: currentUser.photoURL
           },
           [combinedId + ".date"]: serverTimestamp()
         })        
@@ -63,6 +65,11 @@ const Search = () => {
     } catch(err) {
 
     }
+
+    dispatch({
+      type: "CHANGE_USER",
+      payload: user
+    })
 
     setUser(null)
     setUsername("")
