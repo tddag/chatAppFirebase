@@ -16,7 +16,8 @@ const Messages = () => {
     return () => {
       unSub()
     }
-  }, [data.childId])
+
+  }, [data.chatId])
 
   return (
     <div className="messages">
