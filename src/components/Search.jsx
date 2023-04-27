@@ -1,6 +1,6 @@
 import React, { useContext, useState } from 'react'
 import { db } from "../firebase"
-import { collection, query, where, getDocs, updateDoc, setDoc, doc, serverTimestamp, getDoc } from "firebase/firestore";
+import { collection, query, where, getDocs, updateDoc, setDoc, doc, serverTimestamp, getDoc, or } from "firebase/firestore";
 import { AuthContext } from "../context/AuthContext";
 import { ChatContext } from '../context/ChatContext';
 
@@ -13,7 +13,12 @@ const Search = () => {
   const { dispatch } = useContext(ChatContext)
 
   const handleSearch = async () => {
-    const q = query(collection(db, "users"), where("displayName", "==", username))
+    const q = query(collection(db, "users"), 
+      or(
+        where("displayName", "==", username),
+        where("email", "==", username)
+      )
+    )
 
     try {
       const querySnapshot = await getDocs(q);
@@ -78,7 +83,7 @@ const Search = () => {
   return (
     <div className="search">
       <div className="searchForm">
-        <input type="text" placeholder="Find a user" onKeyDown={handleKey} onChange={ e => setUsername(e.target.value)} value={username} />
+        <input type="text" placeholder="Find a user by displayName or email" onKeyDown={handleKey} onChange={ e => setUsername(e.target.value)} value={username} />
       </div> 
 
       { err && <span>User not found!</span>}

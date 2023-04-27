@@ -170,6 +170,7 @@
                         border: none;
                         color: white;
                         outline: none;
+                        width: 100%;
 
                         &::placeholder {
                             color: lightgray
@@ -246,6 +247,10 @@
                     display: flex;
                     gap: 20px;
                     margin-bottom: 20px;
+
+                    .timestamp {
+                        font-size: 11px;
+                    }
 
                     .messageInfo {
                         display: flex;

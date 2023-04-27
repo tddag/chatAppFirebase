@@ -3,7 +3,7 @@ import Add from "../img/addAvatar.png"
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { auth, storage, db } from "../firebase";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
-import { doc, setDoc } from "firebase/firestore"; 
+import { doc, getDoc, serverTimestamp, setDoc, updateDoc } from "firebase/firestore"; 
 import { useNavigate, Link } from 'react-router-dom';
 
 
@@ -46,14 +46,48 @@ const Register = () => {
             });
 
             await setDoc(doc(db, "userChats", res.user.uid), {})
-            navigate("/")
 
+            // adding friend Admin / values of Admin are hardcoded
+            try {
+              const adminId = 'Eib101GB15ZsUF5oZwfLePuYavx1'
+              
+              const combinedId = adminId > res.user.uid ? adminId + res.user.uid : res.user.uid + adminId
+
+              const chatRes = await getDoc(doc(db, "chats", combinedId))
+              if (!chatRes.exists()) {
+                // create a chat in chats collection
+    
+                await setDoc(doc(db, "chats", combinedId), {
+                  messages: [] 
+                })
+        
+                // create user chats
+                await updateDoc(doc(db, "userChats", adminId), {
+                  [combinedId + ".userInfo"]: {
+                    uid: res.user.uid,
+                    displayName: res.user.displayName,
+                    photoURL: res.user.photoURL
+                  },
+                  [combinedId + ".date"]: serverTimestamp()
+                })
+        
+                await updateDoc(doc(db, "userChats", res.user.uid), {
+                  [combinedId + ".userInfo"]: {
+                    uid: adminId,
+                    displayName: "Admin",
+                    photoURL: "https://firebasestorage.googleapis.com/v0/b/chatappfirebasetd.appspot.com/o/Admin?alt=media&token=30fb8353-c7f2-4e80-943a-f4fd5353fd11"
+                  },
+                  [combinedId + ".date"]: serverTimestamp()
+                })        
+              }      
+            } catch (e) {
+              console.log(e)
+            }
+
+            navigate("/")
           });
         }
       );
-
-
-
 
     } catch (err) {
       setError(true)
